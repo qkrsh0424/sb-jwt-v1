@@ -1,5 +1,7 @@
 package com.piaar.jwtsample.model.message;
 
+import java.util.Date;
+
 import org.springframework.http.HttpStatus;
 
 import lombok.Data;
@@ -10,11 +12,14 @@ public class Message {
     private String message;
     private String memo;
     private Object data;
-
     public Message() {
         this.status = HttpStatus.BAD_REQUEST;
         this.message = null;
         this.memo = null;
         this.data = null;
+    }
+
+    public int getStatusCode(){
+        return this.status.value();
     }
 }

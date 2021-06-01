@@ -19,6 +19,7 @@ import com.piaar.jwtsample.model.user.repository.UserRepository;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -38,15 +39,14 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private AuthenticationManager authenticationManager;
     private UserRepository userRepository;
-    private String accessTokenSecret;
-    private String refreshTokenSecret;
+    private JwtTokenMaker jwtTokenMaker;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository,
             String accessTokenSecret, String refreshTokenSecret) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
-        this.accessTokenSecret = accessTokenSecret;
-        this.refreshTokenSecret = refreshTokenSecret;
+        this.jwtTokenMaker = new JwtTokenMaker(accessTokenSecret, refreshTokenSecret);
+
         setFilterProcessesUrl("/api/v1/login");
     }
 
@@ -95,8 +95,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // == REFRESH TOKEN CHECKER ==
         String rtc = UUID.randomUUID().toString();
 
-        String accessToken = getAccessToken(principalDetails, rtc);
-        String refreshToken = getRefreshToken(principalDetails, rtc);
+        String accessToken = jwtTokenMaker.getAccessToken(principalDetails.getUser(), rtc);
+        String refreshToken = jwtTokenMaker.getRefreshToken(principalDetails.getUser(), rtc);
 
         // == 리프레시 토큰 저장 ==
         userRepository.findById(principalDetails.getUser().getId()).ifPresent(r -> {
@@ -107,7 +107,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         ResponseCookie accessTokenCookie = ResponseCookie.from("piaar_actoken", accessToken).path("/").httpOnly(true)
                 .sameSite("Strict")
                 // .secure(true)
-                .maxAge(60 * 60).build();
+                .maxAge(JwtExpireTimeInterface.ACCESS_TOKEN_COOKIE_EXPIRATION).build();
 
         Message message = new Message();
         message.setMessage("success");
@@ -118,52 +118,30 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.setStatus(HttpStatus.OK.value());
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        response.setContentType(MediaType.APPLICATION_JSON.toString());
         response.getWriter().write(oms);
         response.getWriter().flush();
     }
 
-    private String getAccessToken(PrincipalDetails principalDetails, String rtc) {
-        // ===== Access Token Maker START =====
-        // == ACCESS TOKEN Header ==
-        Map<String, Object> atHeaders = new HashMap<>();
-        atHeaders.put("typ", "JWT");
-        atHeaders.put("alg", "HS256");
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+            org.springframework.security.core.AuthenticationException failed) throws IOException, ServletException {
+        // ================로그인 실패.==================
+        // System.out.println("unsuccessfulAuthentication 실행됨 : 인증이 실패햤다는 뜻임.");
+        // response.sendError(HttpStatus.FORBIDDEN.value(), "message");
 
-        // == ACCESS TOKEN Payload ==
-        Map<String, Object> atPayloads = new HashMap<>();
-        atPayloads.put("id", principalDetails.getUser().getId());
-        atPayloads.put("username", principalDetails.getUser().getUsername());
-        atPayloads.put("roles", principalDetails.getUser().getRoles());
-        atPayloads.put("rtc", rtc);
+        Message message = new Message();
+        message.setMessage("login_error");
+        message.setStatus(HttpStatus.FORBIDDEN);
+        message.setMemo("username or password not matched");
 
-        // == ACCESS TOKEN ==
-        String accessToken = Jwts.builder().setHeader(atHeaders).setClaims(atPayloads).setSubject("JWT_ACT")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (10 * 60 * 1000))) // milliseconds
-                .signWith(SignatureAlgorithm.HS256, accessTokenSecret.getBytes()).compact();
-        log.info("JwtAuthentication : successfulAuthentication : print(accessToken) => {}", accessToken);
-        // ===== Access Token Maker END =====
-        return accessToken;
-    }
+        ObjectMapper om = new ObjectMapper();
+        String oms = om.writeValueAsString(message);
 
-    private String getRefreshToken(PrincipalDetails principalDetails, String rtc) {
-        // ===== Refresh Token Maker START =====
-        // == REFRESH TOKEN Header ==
-        Map<String, Object> rtHeaders = new HashMap<>();
-        rtHeaders.put("typ", "JWT");
-        rtHeaders.put("alg", "HS256");
+        response.setStatus(message.getStatus().value());
+        response.setContentType(MediaType.APPLICATION_JSON.toString());
+        response.getWriter().write(oms);
+        response.getWriter().flush();
 
-        // == REFRESH TOKEN Payload ==
-        Map<String, Object> rtPayloads = new HashMap<>();
-        rtPayloads.put("rtc", rtc);
-
-        // == REFRESH TOKEN ==
-        String refreshToken = Jwts.builder().setHeader(rtHeaders).setClaims(rtPayloads).setSubject("JWT_RFT")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (60 * 60 * 1000))) // milliseconds
-                .signWith(SignatureAlgorithm.HS256, refreshTokenSecret.getBytes()).compact();
-        log.info("JwtAuthentication : successfulAuthentication : print(refreshToken) => {}", refreshToken);
-        // ===== Refresh Token Maker END =====
-        return refreshToken;
     }
 }
