@@ -32,10 +32,6 @@ import org.springframework.web.util.WebUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -154,8 +150,6 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         try {
             Claims claims = Jwts.parser().setSigningKey(refreshTokenSecret.getBytes()).parseClaimsJws(refreshToken)
                     .getBody();
-            System.out.println(rtc);
-            System.out.println(claims.get("rtc"));
             if (rtc.equals(claims.get("rtc").toString())) {
                 result.put("message", "valified");
             } else {

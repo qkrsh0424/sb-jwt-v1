@@ -62,6 +62,7 @@
 			<version>0.9.1</version>
 		</dependency>
 
+
 		<!-- junit 4 -->
 		<dependency>
 			<groupId>org.junit.vintage</groupId>
@@ -75,7 +76,6 @@
 			</exclusions>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<plugins>

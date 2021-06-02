@@ -104,7 +104,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             userRepository.save(r);
         });
 
-        ResponseCookie accessTokenCookie = ResponseCookie.from("piaar_actoken", accessToken).path("/").httpOnly(true)
+        ResponseCookie accessTokenCookie = ResponseCookie.from("piaar_actoken", accessToken).path("/")
+                .httpOnly(true)
                 .sameSite("Strict")
                 // .secure(true)
                 .maxAge(JwtExpireTimeInterface.ACCESS_TOKEN_COOKIE_EXPIRATION).build();

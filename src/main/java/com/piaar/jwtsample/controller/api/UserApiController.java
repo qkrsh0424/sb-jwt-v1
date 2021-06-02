@@ -52,14 +52,14 @@ public class UserApiController {
                     message.setMemo("failure");
                     break;
                 default:
-                    message.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                    message.setStatus(HttpStatus.BAD_REQUEST);
                     message.setMessage("error");
                     break;
             }
 
         } catch (Exception e) {
             log.error("UserApiController : createOne => {}.", "create user error.");
-            message.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            message.setStatus(HttpStatus.BAD_REQUEST);
             message.setMessage("error");
         }
 

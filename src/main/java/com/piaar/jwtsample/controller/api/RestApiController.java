@@ -1,5 +1,10 @@
 package com.piaar.jwtsample.controller.api;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.piaar.jwtsample.model.message.Message;
 
 import org.springframework.http.HttpStatus;
@@ -15,11 +20,26 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1")
 @Slf4j
 public class RestApiController {
-    @GetMapping("/resource")
-    public ResponseEntity<?> showResource(){
+    @GetMapping("/test")
+    public ResponseEntity<?> showTest(HttpServletRequest request){
         // log.info("RestApiController : showResource : print(authentication) => {}.", SecurityContextHolder.getContext().getAuthentication());
+        Map<String, Object> data = new HashMap<>();
+        data.put("msg", "test");
+        Message message = new Message();
+        message.setStatus(HttpStatus.OK);
+        message.setData(data);
+        return new ResponseEntity<>(message, message.getStatus());
+    }
+
+    @GetMapping("/resource")
+    public ResponseEntity<?> showResource(HttpServletRequest request){
+        // log.info("RestApiController : showResource : print(authentication) => {}.", SecurityContextHolder.getContext().getAuthentication());
+        Map<String, Object> data = new HashMap<>();
+        data.put("msg", "resource");
+
         Message message = new Message();
         message.setStatus(HttpStatus.OK);
         return new ResponseEntity<>(message, message.getStatus());
     }
+
 }
