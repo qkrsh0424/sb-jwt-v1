@@ -2,6 +2,7 @@ package com.piaar.jwtsample.config;
 
 import com.piaar.jwtsample.config.auth.JwtAuthenticationFilter;
 import com.piaar.jwtsample.config.auth.JwtAuthorizationFilter;
+import com.piaar.jwtsample.model.refresh_token.repository.RefreshTokenRepository;
 import com.piaar.jwtsample.model.user.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    RefreshTokenRepository refreshTokenRepository;
     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -50,8 +54,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .disable()
                 // .addFilterBefore(new CsrfHeaderFilterBefore(csrfJwtSecret), CsrfFilter.class)
                 // .addFilterAfter(new CsrfHeaderFilterAfter(csrfJwtSecret), CsrfFilter.class)
-                .addFilter(new JwtAuthenticationFilter(authenticationManager(), userRepository, accessTokenSecret, refreshTokenSecret)) // AuthenticationManager
-                .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository, accessTokenSecret, refreshTokenSecret)) // AuthenticationManager
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(), userRepository, refreshTokenRepository, accessTokenSecret, refreshTokenSecret)) // AuthenticationManager
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository, refreshTokenRepository, accessTokenSecret, refreshTokenSecret)) // AuthenticationManager
             ;
     }
 

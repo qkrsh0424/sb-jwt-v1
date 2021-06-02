@@ -3,6 +3,7 @@ package com.piaar.jwtsample.config.auth;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.piaar.jwtsample.model.user.entity.UserEntity;
 
@@ -18,7 +19,7 @@ public class JwtTokenMaker {
         this.refreshTokenSecret = refreshTokenSecret;
     }
 
-    public String getAccessToken(UserEntity userEntity, String rtc) {
+    public String getAccessToken(UserEntity userEntity, UUID rtId) {
         // ===== Access Token Maker START =====
         // == ACCESS TOKEN Header ==
         Map<String, Object> atHeaders = new HashMap<>();
@@ -30,7 +31,7 @@ public class JwtTokenMaker {
         atPayloads.put("id", userEntity.getId());
         atPayloads.put("username", userEntity.getUsername());
         atPayloads.put("roles", userEntity.getRoles());
-        atPayloads.put("rtc", rtc);
+        atPayloads.put("rtid", rtId);
 
         // == ACCESS TOKEN ==
         String accessToken = Jwts.builder().setHeader(atHeaders).setClaims(atPayloads).setSubject("JWT_ACT")
@@ -41,7 +42,7 @@ public class JwtTokenMaker {
         return accessToken;
     }
 
-    public String getRefreshToken(UserEntity userEntity, String rtc) {
+    public String getRefreshToken(UserEntity userEntity, UUID rtId) {
         // ===== Refresh Token Maker START =====
         // == REFRESH TOKEN Header ==
         Map<String, Object> rtHeaders = new HashMap<>();
@@ -50,7 +51,6 @@ public class JwtTokenMaker {
 
         // == REFRESH TOKEN Payload ==
         Map<String, Object> rtPayloads = new HashMap<>();
-        rtPayloads.put("rtc", rtc);
 
         // == REFRESH TOKEN ==
         String refreshToken = Jwts.builder().setHeader(rtHeaders).setClaims(rtPayloads).setSubject("JWT_RFT")

@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.piaar.jwtsample.model.message.Message;
+import com.piaar.jwtsample.model.refresh_token.entity.RefreshTokenEntity;
+import com.piaar.jwtsample.model.refresh_token.repository.RefreshTokenRepository;
 import com.piaar.jwtsample.model.user.entity.UserEntity;
 import com.piaar.jwtsample.model.user.repository.UserRepository;
 
@@ -39,12 +41,14 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private AuthenticationManager authenticationManager;
     private UserRepository userRepository;
+    private RefreshTokenRepository refreshTokenRepository;
     private JwtTokenMaker jwtTokenMaker;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository,
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository, RefreshTokenRepository refreshTokenRepository,
             String accessTokenSecret, String refreshTokenSecret) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.jwtTokenMaker = new JwtTokenMaker(accessTokenSecret, refreshTokenSecret);
 
         setFilterProcessesUrl("/api/v1/login");
@@ -86,6 +90,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
+    // TODO : 코드 리펙터링
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
@@ -94,15 +99,31 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         // == REFRESH TOKEN CHECKER ==
         String rtc = UUID.randomUUID().toString();
+        UUID rtId = UUID.randomUUID();
 
-        String accessToken = jwtTokenMaker.getAccessToken(principalDetails.getUser(), rtc);
-        String refreshToken = jwtTokenMaker.getRefreshToken(principalDetails.getUser(), rtc);
+        String accessToken = jwtTokenMaker.getAccessToken(principalDetails.getUser(), rtId);
+        String refreshToken = jwtTokenMaker.getRefreshToken(principalDetails.getUser(), rtId);
+
+        // == 리프레시 토큰 저장 OLD ==
+        // userRepository.findById(principalDetails.getUser().getId()).ifPresent(r -> {
+        //     r.setRefreshToken(refreshToken);
+        //     userRepository.save(r);
+        // });
 
         // == 리프레시 토큰 저장 ==
-        userRepository.findById(principalDetails.getUser().getId()).ifPresent(r -> {
-            r.setRefreshToken(refreshToken);
-            userRepository.save(r);
-        });
+        try{
+            saveRefreshToken(principalDetails.getUser(), rtId, refreshToken);
+        }catch(Exception e){
+            log.error("JwtAuthenticationFilter : successfulAuthentication : saveRefreshToken => {}","DB save new refresh token error");
+        }
+
+        // == 리프레시 토큰 제한 개수 초과데이터 삭제 ==
+        try{
+            deleteLimitRefreshToken(principalDetails.getUser());
+        }catch(Exception e){
+            log.error("JwtAuthenticationFilter : successfulAuthentication : deleteLimitRefreshToken => {}","DB delete old refresh token error");
+        }
+
 
         ResponseCookie accessTokenCookie = ResponseCookie.from("piaar_actoken", accessToken).path("/")
                 .httpOnly(true)
@@ -144,5 +165,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.getWriter().write(oms);
         response.getWriter().flush();
 
+    }
+
+    private void saveRefreshToken(UserEntity userEntity, UUID rtId, String refreshToken){
+        RefreshTokenEntity refreshTokenEntity = new RefreshTokenEntity();
+        refreshTokenEntity.setId(rtId);
+        refreshTokenEntity.setUserId(userEntity.getId());
+        refreshTokenEntity.setRefreshToken(refreshToken);
+        refreshTokenEntity.setCreatedAt(new Date());
+        refreshTokenEntity.setUpdatedAt(new Date());
+        refreshTokenRepository.save(refreshTokenEntity);
+    }
+
+    private void deleteLimitRefreshToken(UserEntity userEntity){
+        refreshTokenRepository.deleteOldRefreshTokens(userEntity.getId().toString());
     }
 }
