@@ -19,6 +19,14 @@ public class JwtTokenMaker {
         this.refreshTokenSecret = refreshTokenSecret;
     }
 
+
+    /**
+     * 유저 데이터와 생성된 리프레시토큰 아이디를 가지고 엑세스 토큰을 만든다.
+     * @param userEntity
+     * @param rtId
+     * @return accessToken : String
+     * @author SHP Austine
+     */
     public String getAccessToken(UserEntity userEntity, UUID rtId) {
         // ===== Access Token Maker START =====
         // == ACCESS TOKEN Header ==
@@ -42,7 +50,12 @@ public class JwtTokenMaker {
         return accessToken;
     }
 
-    public String getRefreshToken(UserEntity userEntity, UUID rtId) {
+    /**
+     * 리프레시 토큰을 만든다.
+     * @return refreshToken : String
+     * @author SHP Austine
+     */
+    public String getRefreshToken() {
         // ===== Refresh Token Maker START =====
         // == REFRESH TOKEN Header ==
         Map<String, Object> rtHeaders = new HashMap<>();

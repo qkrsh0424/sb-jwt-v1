@@ -42,8 +42,8 @@ public class UserEntity {
     @Column(name = "roles")
     private String roles;
 
-    @Column(name = "refresh_token")
-    private String refreshToken;
+    @Column(name = "allowed_access_count")
+    private Integer allowedAccessCount;
 
     @Column(name = "updated_at")
     private Date updatedAt;

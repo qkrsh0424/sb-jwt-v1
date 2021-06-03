@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class UserService {
+    private final Integer DEFAULT_ALLOWED_ACCESS_COUNT = 3;
+    
     @Autowired
     PasswordEncoder encoder;
 
@@ -41,6 +43,7 @@ public class UserService {
         userEntity.setPassword(password);
         userEntity.setSalt(salt);
         userEntity.setRoles("ROLE_USER");
+        userEntity.setAllowedAccessCount(DEFAULT_ALLOWED_ACCESS_COUNT);
         userEntity.setUpdatedAt(dateHandler.getCurrentDate());
         userEntity.setCreatedAt(dateHandler.getCurrentDate());
 

@@ -90,25 +90,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
-    // TODO : 코드 리펙터링
+    // ================로그인 성공.==================
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Authentication authResult) throws IOException, ServletException {
         log.info("JwtAuthenticationFilter : successfulAuthentication : authResult => {}", authResult);
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
 
-        // == REFRESH TOKEN CHECKER ==
-        String rtc = UUID.randomUUID().toString();
+        // == REFRESH TOKEN ID ==
         UUID rtId = UUID.randomUUID();
 
         String accessToken = jwtTokenMaker.getAccessToken(principalDetails.getUser(), rtId);
-        String refreshToken = jwtTokenMaker.getRefreshToken(principalDetails.getUser(), rtId);
-
-        // == 리프레시 토큰 저장 OLD ==
-        // userRepository.findById(principalDetails.getUser().getId()).ifPresent(r -> {
-        //     r.setRefreshToken(refreshToken);
-        //     userRepository.save(r);
-        // });
+        String refreshToken = jwtTokenMaker.getRefreshToken();
 
         // == 리프레시 토큰 저장 ==
         try{
@@ -145,17 +138,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.getWriter().flush();
     }
 
+    // ================로그인 실패.==================
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
             org.springframework.security.core.AuthenticationException failed) throws IOException, ServletException {
-        // ================로그인 실패.==================
-        // System.out.println("unsuccessfulAuthentication 실행됨 : 인증이 실패햤다는 뜻임.");
         // response.sendError(HttpStatus.FORBIDDEN.value(), "message");
 
         Message message = new Message();
         message.setMessage("login_error");
         message.setStatus(HttpStatus.FORBIDDEN);
-        message.setMemo("username or password not matched");
+        message.setMemo("username not exist or password not matched.");
 
         ObjectMapper om = new ObjectMapper();
         String oms = om.writeValueAsString(message);
@@ -178,6 +170,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     private void deleteLimitRefreshToken(UserEntity userEntity){
-        refreshTokenRepository.deleteOldRefreshTokens(userEntity.getId().toString());
+        refreshTokenRepository.deleteOldRefreshTokens(userEntity.getId().toString(), userEntity.getAllowedAccessCount());
     }
 }

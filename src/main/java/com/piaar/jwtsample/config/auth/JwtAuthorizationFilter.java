@@ -102,7 +102,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                 userEntity.setRoles(claims.get("roles").toString());
 
                 String newAccessToken = jwtTokenMaker.getAccessToken(userEntity, refreshTokenEntity.getId());
-                String newRefreshToken = jwtTokenMaker.getRefreshToken(userEntity, refreshTokenEntity.getId());
+                String newRefreshToken = jwtTokenMaker.getRefreshToken();
 
                 // == 리프레시 토큰 생성 및 DB 저장 ==
                 refreshTokenRepository.findById(refreshTokenEntity.getId()).ifPresent(r -> {

@@ -45,8 +45,8 @@ public class UserApiControllerTest {
     @Test
     public void loginTest() throws Exception{
         UserDefDto userDefDto = new UserDefDto();
-        userDefDto.setUsername("user111");
-        userDefDto.setPassword("user111!");
+        userDefDto.setUsername("user222");
+        userDefDto.setPassword("user222!");
 
         ObjectMapper om = new ObjectMapper();
 
