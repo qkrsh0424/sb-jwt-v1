@@ -2,6 +2,7 @@ package com.piaar.jwtsample.config;
 
 import com.piaar.jwtsample.config.auth.JwtAuthenticationFilter;
 import com.piaar.jwtsample.config.auth.JwtAuthorizationFilter;
+import com.piaar.jwtsample.config.auth.JwtLogoutSuccessHandler;
 import com.piaar.jwtsample.model.refresh_token.repository.RefreshTokenRepository;
 import com.piaar.jwtsample.model.user.repository.UserRepository;
 
@@ -49,6 +50,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().permitAll()
             .and()
                 .formLogin().disable()
+                .logout()
+                    .logoutUrl("/api/v1/logout")
+                    .logoutSuccessHandler(new JwtLogoutSuccessHandler())
+                    .deleteCookies("piaar_actoken")
+                .and()
                 .httpBasic().disable()
                 .csrf()
                 .disable()
@@ -56,6 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // .addFilterAfter(new CsrfHeaderFilterAfter(csrfJwtSecret), CsrfFilter.class)
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), userRepository, refreshTokenRepository, accessTokenSecret, refreshTokenSecret)) // AuthenticationManager
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository, refreshTokenRepository, accessTokenSecret, refreshTokenSecret)) // AuthenticationManager
+                
             ;
     }
 
@@ -63,4 +70,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

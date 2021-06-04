@@ -146,7 +146,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         Message message = new Message();
         message.setMessage("login_error");
-        message.setStatus(HttpStatus.FORBIDDEN);
+        message.setStatus(HttpStatus.UNAUTHORIZED);
         message.setMemo("username not exist or password not matched.");
 
         ObjectMapper om = new ObjectMapper();
