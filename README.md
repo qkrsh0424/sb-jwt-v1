@@ -17,6 +17,7 @@ updated_at
 
 그러나 v2에서는 refresh 토큰을 여러개 발급할수 있게하여서 N개의 아이피 혹은 브라우저로 로그인 접근이 가능하게 하는것이 목적이다.
 
-table: user \n
+#### DB TABLES
+table: user | (default columns) => user_pk, id, username, password, salt, roles, allowed_access_count, updated_at, created_at
 
-(default columns) => user_pk, id, username, password, salt, roles, allowed_access_count, updated_at, created_at
+table: refresh_token | (default columns) => refresh_token_pk, id, user_id, refresh_token, created_at, updated_at
