@@ -21,3 +21,6 @@ updated_at
 table: user | (default columns) => user_pk, id, username, password, salt, roles, allowed_access_count, updated_at, created_at
 
 table: refresh_token | (default columns) => refresh_token_pk, id, user_id, refresh_token, created_at, updated_at
+
+#### Local Module
+module/auth-module

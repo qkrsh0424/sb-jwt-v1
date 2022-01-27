@@ -1,6 +1,6 @@
 package com.piaar.jwtsample.controller.api;
 
-import com.piaar.jwtsample.model.message.Message;
+import com.piaar.jwtsample.domain.message.dto.Message;
 import com.piaar.jwtsample.model.user.dto.SignupReqDto;
 import com.piaar.jwtsample.service.user.UserService;
 

@@ -2,8 +2,6 @@ package com.piaar.jwtsample.config.auth;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.piaar.jwtsample.model.message.Message;
+import com.piaar.jwtsample.domain.message.dto.Message;
 import com.piaar.jwtsample.model.refresh_token.entity.RefreshTokenEntity;
 import com.piaar.jwtsample.model.refresh_token.repository.RefreshTokenRepository;
 import com.piaar.jwtsample.model.user.entity.UserEntity;
@@ -31,8 +29,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.piaar.jwtsample.model.message.Message;
+import com.piaar.jwtsample.domain.message.dto.Message;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
